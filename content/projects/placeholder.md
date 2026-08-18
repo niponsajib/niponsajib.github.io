@@ -2,7 +2,7 @@
 title: Placeholder Project
 date: 2026
 tags: [Biomedical Engineering, Research, Placeholder]
-image: /assets/images/placeholder.svg
+image: /assets/images/prosthetic-hand.svg
 summary: A placeholder project description that can be replaced with details about a biomedical engineering project, research experience, or technical build.
 stack: [Python, C++, Arduino, MATLAB]
 ---

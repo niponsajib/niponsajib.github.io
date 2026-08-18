@@ -11,12 +11,6 @@ I've wanted a place to write down what I'm building for a while, so here it is â
 
 ## Why biomedical engineering
 
-I grew up in the Bronx watching family members navigate a healthcare system that often felt like it was built for anyone *except* the person in front of it. That stuck with me. Biomedical engineering was the first field I found where I could point a soldering iron and a signal processing textbook directly at that problem.
-
-## What I'm working on right now
-
-- A low-cost wearable ECG patch for early arrhythmia flagging
-- An EEG-based attention-tracking pipeline for a cognitive science lab
-- A myoelectric prosthetic hand prototype controlled by forearm EMG
+I grew up in the Bronx watching family members navigate a healthcare system that often felt like it was built for anyone _except_ the person in front of it. That stuck with me. Biomedical engineering was the first field I found where I could point a soldering iron and a signal processing textbook directly at that problem.
 
 I'll be posting build logs, dead ends, and the occasional "it finally worked" moment here. Thanks for reading.

@@ -43,7 +43,7 @@
       eyebrow: "Case Item 02",
       kind: "collection",
       contentDir: "projects",
-      slugs: ["cardiotrace", "neuromap", "prosthetic-grip"],
+      slugs: ["prosthetic-grip", "placeholder"],
     },
     // Resume is edited by hand in content/resume.md — no code changes
     // needed to update it, just edit that file.
@@ -60,11 +60,7 @@
       eyebrow: "Case Item 04",
       kind: "collection",
       contentDir: "blog",
-      slugs: [
-        "why-school-health",
-        "building-a-diy-ecg-patch",
-        "welcome-to-the-lab",
-      ],
+      slugs: ["welcome-to-the-lab"],
     },
     {
       id: "contact",
