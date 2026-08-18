@@ -1340,7 +1340,7 @@
         const linkBtn =
           entry && entry.data.resume_link
             ? `<a class="resume-link-btn" href="${entry.data.resume_link}" target="_blank" rel="noopener noreferrer">
-               📄 View live resume <span class="arrow">→</span>
+               📄 View live resume in Google Docs <span class="arrow">→</span>
              </a>`
             : "";
         const body = entry
