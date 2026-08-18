@@ -43,7 +43,7 @@
       eyebrow: "Case Item 02",
       kind: "collection",
       contentDir: "projects",
-      slugs: ["prosthetic-grip", "placeholder"],
+      slugs: ["placeholder", "prosthetic-grip"],
     },
     // Resume is edited by hand in content/resume.md — no code changes
     // needed to update it, just edit that file.
@@ -250,7 +250,7 @@
      =========================================================================== */
   const Theme = (() => {
     const KEY = "ns-theme";
-    const DEFAULT = "light";
+    const DEFAULT = "dark";
     const VALID = ["dark", "light"];
 
     function apply(theme) {
@@ -292,14 +292,14 @@
         body: `
           <p>I'm Nipon — a biomedical engineering student from the Bronx, NY, with three years of hands-on
           experience building wearable sensors and physiological monitoring tools. I like the parts of engineering
-          that sit closest to an actual person: a signal on a chest strap, a grip strength on a prosthetic hand.</p>
+          that sit closest to an actual person.</p>
           <div class="fact-row">
             <div class="fact"><span class="k">Based in</span><span class="v">Bronx, NY</span></div>
             <div class="fact"><span class="k">Focus</span><span class="v">Biomedical Engineering</span></div>
             <div class="fact"><span class="k">Experience</span><span class="v">3 years</span></div>
-            <div class="fact"><span class="k">Currently looking for</span><span class="v">An internship </span></div>
+            <div class="fact"><span class="k">Currently looking for</span><span class="v">An internship</span></div>
           </div>
-          <p>Right now I'm specifically hoping to land a biomedical engineering internship — so I can bring
+          <p>Right now I'm specifically looking for an internship — somewhere I can bring
           engineering directly into everyday healthcare, not just build for it from a distance.</p>
         `,
       },
@@ -308,8 +308,8 @@
         body: `
           <p>Have a project in mind, or know of an opening in a school health office? My inbox is open.</p>
           <div class="contact-links">
-            <a href="mailto:niponsajib@gmail.com" target="_blank">Email <span class="tag">niponsajib@gmail.com</span></a>
-            <a href="https://github.com/niponsajib" taget="_blank">GitHub <span class="tag">/niponsajib</span></a>
+            <a href="mailto:niponsajib@gmail.com">Email <span class="tag">niponsajib@gmail.com</span></a>
+            <a href="https://github.com/niponsajib" target="_blank">GitHub <span class="tag">@niponsajib</span></a>
             <a href="https://linkedin.com/in/niponsajib" target="_blank">LinkedIn <span class="tag">/in/niponsajib</span></a>
           </div>
         `,
@@ -997,6 +997,9 @@
       animBusy = true;
       caption.textContent = "";
       pokeballGroups.forEach((ball) => ball.scale.setScalar(0.0001));
+      // clears any leftover #section/slug in the URL — a safety net so a
+      // stale deep-link can never linger past the case actually closing
+      Router.clear();
       animate(
         800,
         easeOutCubic,
@@ -1404,10 +1407,17 @@
       if (!opts.fromRouter) Router.set(sectionId, slug);
     }
 
-    function openSection(sectionId, fromRouter) {
+    function openSection(sectionId, slug, fromRouter) {
       lastFocused = document.activeElement;
       activeBallId = sectionId;
-      navigate(sectionId, null, { fromRouter });
+      // Direct pokéball clicks always pass slug=null here, which forces the
+      // list view AND overwrites the URL hash (via navigate -> Router.set)
+      // even if it still had an old post/project slug in it from earlier —
+      // that stale-hash mismatch was the actual bug: clicking a pokéball
+      // fresh could still show whatever detail view the leftover URL
+      // pointed at. Only applyRoute() (a real shared link, or the page
+      // loading with a hash already in the URL) passes a real slug through.
+      navigate(sectionId, slug || null, { fromRouter });
       backdrop.classList.add("is-active");
       modalPanel.focus();
     }
@@ -1555,7 +1565,7 @@
     );
 
     wireInteraction(sceneApi, host, (sectionId) =>
-      ui.openSection(sectionId, false),
+      ui.openSection(sectionId, null, false),
     );
     wireLabels(sceneApi, host, SECTIONS);
 
@@ -1582,7 +1592,7 @@
         // small delay so this runs after the pokéballs finish popping up
         // out of their sockets, instead of overlapping that animation
         setTimeout(() => {
-          ui.openSection(route.section, true);
+          ui.openSection(route.section, route.slug, true);
           if (ball) sceneApi.popOpenBall(ball);
         }, 550);
       };
