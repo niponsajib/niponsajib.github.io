@@ -1,0 +1,900 @@
+/* =========================================================================
+   PORTFOLIO STYLES — Nipon Sajib
+   Color scheme: dark gunmetal gray with red accents (see :root variables).
+   Sections in this file:
+     1. Design tokens
+     2. Base / layout
+     3. Header + avatar
+     4. Heartbeat background motif
+     5. 3D stage + on-canvas controls
+     6. Labels (floating pokéball section tags)
+     7. Luggage tag + footer
+     8. Modal shell
+     9. Content blocks (about / list / cards / detail / contact)
+    10. Audio toggle button
+    11. Motion / accessibility
+   ========================================================================= */
+
+/* 1. DESIGN TOKENS ------------------------------------------------------- */
+/* The page itself is always dark — only the popups (pokéball modals) are
+   themeable. --bg-*\/--ink tokens below are the fixed page chrome colors.
+   --modal-* tokens are the ones js/main.js §4b swaps via data-theme. */
+:root {
+  --bg-0: #121316; /* page background, darkest */
+  --bg-1: #1a1c20; /* panels */
+  --bg-2: #23262b; /* raised surfaces / cards */
+  --bg-3: #2c3036; /* hover / borders */
+  --ink: #e9e7e2; /* primary text on dark */
+  --ink-dim: #a7aab0; /* secondary text on dark */
+
+  /* fixed page backdrop gradient — not part of the popup theme, the page
+     never changes color */
+  --page-grad-top: #1d2025;
+  --page-grad-mid: #121316;
+  --page-grad-bottom: #0a0b0d;
+
+  /* popup theme: dark (default) */
+  --modal-bg-1: #1a1c20;
+  --modal-bg-2: #23262b;
+  --modal-border: #2c3036;
+  --modal-ink: #e9e7e2;
+  --modal-ink-dim: #a7aab0;
+  --modal-chip: #2c3036;
+
+  /* the luggage tag is a fixed "physical prop" color, not themed — it
+     always needs to read against the always-dark page */
+  --tag-bg-top: #f3eee1;
+  --tag-bg-bottom: #d8d4c8;
+  --tag-ink: #241c14;
+  --tag-border: #cfc6ac;
+
+  --red: #d8402a; /* accent - pokeball red, constant across themes */
+  --red-dim: #a3301f;
+  --steel: #b9bec6; /* polished metal accent */
+  --steel-dark: #7d828a;
+  --felt-blue: #22306b; /* royal blue lining, referenced in a couple of UI spots */
+  --focus: #f6c667;
+  --font-display: "Fredoka", sans-serif;
+  --font-body: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* POPUP THEME ---------------------------------------------------------------
+   <html data-theme="dark|light"> is set by js/main.js §4b (Theme). Only
+   affects --modal-* — the page underneath never changes. */
+[data-theme="light"] {
+  --modal-bg-1: #ffffff;
+  --modal-bg-2: #efeadd;
+  --modal-border: #ddd6c4;
+  --modal-ink: #221e1a;
+  --modal-ink-dim: #5c554a;
+  --modal-chip: #ddd6c4;
+}
+
+/* 2. BASE / LAYOUT -------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  /* fixed dark gradient backdrop — a soft red glow up top (ties to the
+     accent color) over a charcoal-to-near-black diagonal. Not themed;
+     the page background never changes, only the popups do. */
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 50% -10%,
+      rgba(216, 64, 42, 0.08),
+      transparent 55%
+    ),
+    linear-gradient(
+      165deg,
+      var(--page-grad-top) 0%,
+      var(--page-grad-mid) 45%,
+      var(--page-grad-bottom) 100%
+    );
+  background-attachment: fixed;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5vh 5vw 6vh;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+/* everything fades/slides in together on load; JS adds .is-ready to <body> */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
+}
+body.is-ready .reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* stagger a little so header leads and footer trails */
+.site-header.reveal {
+  transition-delay: 0ms;
+}
+.stage-frame.reveal {
+  transition-delay: 120ms;
+}
+.stage-controls.reveal {
+  transition-delay: 200ms;
+}
+.luggage-tag.reveal {
+  transition-delay: 260ms;
+}
+footer.reveal {
+  transition-delay: 320ms;
+}
+
+/* 3. HEADER + AVATAR ------------------------------------------------------ */
+/* Stacked layout: avatar centered on top, eyebrow/title/subtitle centered
+   below it — keeps the profile picture on the page's actual center line
+   instead of off to one side of the text. */
+.site-header {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 94vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 3.5vh;
+}
+.header-text {
+  text-align: center;
+}
+.header-text .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--red);
+  display: block;
+  margin-bottom: 0.6rem;
+}
+.header-text h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: var(--ink);
+  font-weight: 700;
+}
+.header-text p {
+  color: var(--ink-dim);
+  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  margin-top: 0.5rem;
+}
+
+/* circular profile picture, centered above the name */
+.avatar {
+  flex: none;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-0));
+  border: 2px solid var(--red);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* shown briefly if the image fails to load, or before it's set */
+.avatar .avatar-fallback {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+
+/* 4. HEARTBEAT BACKGROUND MOTIF ------------------------------------------- */
+/* Two rows of a scrolling ECG waveform, each also pulsing in opacity/scale
+   so the motif reads as a heartbeat rather than a static scrolling line. */
+.heartbeat-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12vh 0;
+}
+.heartbeat-row {
+  width: max-content;
+  display: flex;
+}
+.heartbeat-row.reverse {
+  align-self: flex-end;
+}
+.hb-track {
+  display: flex;
+  animation:
+    hbScroll 15s linear infinite,
+    hbPulse 1.15s ease-in-out infinite;
+  transform-origin: center;
+}
+.heartbeat-row.reverse .hb-track {
+  animation-duration: 19s, 1.4s;
+  animation-direction: reverse, normal;
+}
+.hb-svg {
+  height: 90px;
+  width: 2400px;
+  flex: none;
+  display: block;
+}
+.hb-path {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.45;
+  filter: drop-shadow(0 0 8px rgba(216, 64, 42, 0.55));
+}
+.heartbeat-row.reverse .hb-path {
+  stroke: var(--steel);
+  opacity: 0.22;
+  filter: drop-shadow(0 0 6px rgba(185, 190, 198, 0.4));
+}
+@keyframes hbScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-2400px);
+  }
+}
+@keyframes hbPulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  45% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.5;
+  }
+}
+
+/* 5. 3D STAGE + ON-CANVAS CONTROLS ---------------------------------------- */
+.stage-frame {
+  position: relative;
+  z-index: 1;
+  width: min(920px, 94vw);
+  aspect-ratio: 16/10.5;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 50% 30%, var(--bg-2), var(--bg-0) 85%);
+  border: 1px solid var(--bg-3);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 6px var(--bg-0),
+    inset 0 0 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  touch-action: none;
+}
+#canvasHost {
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: grab;
+}
+#canvasHost.hoverable {
+  cursor: pointer;
+}
+#canvasHost.dragging {
+  cursor: grabbing;
+}
+#canvasHost canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.stage-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+  opacity: 0.8;
+  pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+.webgl-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+}
+
+/* Reset view / open-close buttons under the stage */
+.stage-controls {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.stage-btn {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  background: var(--bg-2);
+  border: 1px solid var(--bg-3);
+  padding: 9px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+.stage-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--red);
+  transform: translateY(-1px);
+}
+.stage-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* 6. FLOATING POKÉBALL LABELS ---------------------------------------------- */
+/* Positioned every frame in JS via 3D->screen projection, so section names
+   float directly under each pokéball while the case is open. */
+.ball-label {
+  position: absolute;
+  transform: translate(-50%, 6px);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: rgba(18, 19, 22, 0.72);
+  border: 1px solid var(--bg-3);
+  padding: 3px 9px;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 250ms ease;
+  white-space: nowrap;
+  z-index: 2;
+}
+.ball-label.is-visible {
+  opacity: 1;
+}
+
+/* 7. LUGGAGE TAG + FOOTER -------------------------------------------------- */
+/* Dedicated tokens (not the page --bg-*\/--ink tokens, which is what caused
+   the white-on-white bug) so the tag always contrasts with its own
+   background, and flips per theme so it also contrasts with the page
+   behind it: cream tag on a dark page, dark tag on a light page. */
+.luggage-tag {
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
+  background: linear-gradient(180deg, var(--tag-bg-top), var(--tag-bg-bottom));
+  color: var(--tag-ink);
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--tag-border);
+  transition:
+    background 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease;
+  /* kept level, no slant */
+}
+.luggage-tag b {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 5vh;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* 8. MODAL SHELL ------------------------------------------------------------ */
+/* Everything below uses the --modal-* tokens (see §1) rather than the page
+   tokens, so the "dark page, light popups" theme can style this in
+   isolation from the rest of the site. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    rgba(10, 10, 12, 0.75),
+    rgba(4, 4, 5, 0.9)
+  );
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vh 4vw;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+.modal-backdrop.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal {
+  width: min(620px, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--modal-bg-2), var(--modal-bg-1) 60%);
+  color: var(--modal-ink);
+  border-radius: 20px;
+  border: 1px solid var(--modal-border);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65);
+  transform: scale(0.82) translateY(30px);
+  transition: transform 320ms cubic-bezier(0.2, 0.9, 0.25, 1.2);
+  position: relative;
+}
+.modal-backdrop.is-active .modal {
+  transform: scale(1) translateY(0);
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px 14px;
+  border-bottom: 2px dashed var(--modal-border);
+}
+.modal-head .mini-ball {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex: none;
+  background: linear-gradient(180deg, var(--red) 50%, #fff 50%);
+  border: 2.5px solid #14151a;
+  position: relative;
+}
+.modal-head .mini-ball::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #14151a;
+  box-shadow: 0 0 0 2px var(--steel) inset;
+}
+.modal-head .mini-ball::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(50% - 2px);
+  width: 100%;
+  height: 4px;
+  background: #14151a;
+}
+.modal-head h2 {
+  font-size: 1.4rem;
+  color: var(--modal-ink);
+}
+.modal-head .modal-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.modal-close,
+.modal-back {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--modal-border);
+  background: var(--modal-bg-1);
+  color: var(--modal-ink);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  cursor: pointer;
+  flex: none;
+  transition:
+    transform 150ms ease,
+    background 150ms ease;
+}
+.modal-close {
+  margin-left: auto;
+}
+.modal-close:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  transform: rotate(90deg);
+}
+.modal-back:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+.modal-close:focus-visible,
+.modal-back:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.modal-body {
+  padding: 20px 24px 26px;
+}
+.modal-body p {
+  line-height: 1.65;
+  color: var(--modal-ink);
+  margin: 0 0 14px;
+}
+.modal-body p:last-child {
+  margin-bottom: 0;
+}
+.modal-body a {
+  color: var(--red);
+}
+
+/* 9. CONTENT BLOCKS --------------------------------------------------------- */
+.fact-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+.fact {
+  background: var(--modal-bg-1);
+  border: 1px solid var(--modal-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.fact .k {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--modal-ink-dim);
+  display: block;
+}
+.fact .v {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 2px;
+  color: var(--modal-ink);
+}
+
+/* preview cards, shared by the Projects and Blog sections */
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.preview-card {
+  display: flex;
+  gap: 14px;
+  border: 1px solid var(--modal-border);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--modal-bg-1);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+.preview-card:hover {
+  border-color: var(--red);
+  transform: translateX(2px);
+}
+.preview-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.preview-card img {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex: none;
+  border: 1px solid var(--modal-border);
+}
+.preview-card .pc-body {
+  min-width: 0;
+}
+.preview-card h3 {
+  font-size: 1rem;
+  margin-bottom: 3px;
+  color: var(--modal-ink);
+}
+.preview-card .pc-meta {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--modal-ink-dim);
+  margin-bottom: 6px;
+}
+.preview-card p {
+  font-size: 0.86rem;
+  color: var(--modal-ink-dim);
+  margin: 0;
+  line-height: 1.45;
+}
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.chip {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  background: var(--modal-chip);
+  color: var(--modal-ink);
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.chip.accent {
+  background: var(--red);
+  color: #fff;
+}
+
+/* detail view (shared: blog post or project write-up rendered from markdown) */
+.detail-image {
+  width: 100%;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--modal-border);
+}
+.detail-meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--modal-ink-dim);
+  margin-bottom: 16px;
+}
+.detail-body h2 {
+  font-size: 1.1rem;
+  margin: 20px 0 8px;
+  color: var(--red);
+}
+.detail-body h2:first-child {
+  margin-top: 0;
+}
+.detail-body ul,
+.detail-body ol {
+  padding-left: 1.2em;
+  margin: 0 0 14px;
+  color: var(--modal-ink);
+}
+.detail-body li {
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+.detail-body code {
+  background: var(--modal-chip);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+/* contact links */
+.contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+.contact-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid var(--modal-border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--modal-ink);
+  font-family: var(--font-body);
+  font-weight: 600;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+.contact-links a:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  transform: translateX(3px);
+}
+.contact-links a span.tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* resume "live copy" link — rectangular, high-contrast, sits at the top of
+   the resume popup. Uses the constant --red accent (not the modal theme
+   tokens) so it stays vivid in both popup themes. */
+.resume-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red);
+  color: #fff !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 12px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 20px rgba(216, 64, 42, 0.35);
+  transition:
+    background 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+.resume-link-btn:hover {
+  background: var(--red-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(216, 64, 42, 0.45);
+}
+.resume-link-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.resume-link-btn .arrow {
+  transition: transform 150ms ease;
+}
+.resume-link-btn:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* 10. AUDIO + THEME CONTROLS -------------------------------------------------- */
+.audio-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--bg-3);
+  background: var(--bg-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+.audio-toggle:hover {
+  background: var(--bg-3);
+  transform: scale(1.05);
+}
+.audio-toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.audio-toggle[data-playing="true"] {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* theme switcher — mirrors the audio toggle, opposite corner */
+.theme-picker {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--bg-3);
+  border-radius: 22px;
+  padding: 8px 14px 8px 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+.theme-picker label {
+  font-size: 1rem;
+  line-height: 1;
+}
+.theme-picker select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  padding-right: 4px;
+}
+.theme-picker select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.theme-picker select option {
+  background: var(--bg-2);
+  color: var(--ink);
+}
+
+/* 11. MOTION / ACCESSIBILITY -------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  body.is-ready .reveal {
+    transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .fact-row {
+    grid-template-columns: 1fr;
+  }
+  .preview-card {
+    flex-direction: column;
+  }
+  .preview-card img {
+    width: 100%;
+    height: 140px;
+  }
+}

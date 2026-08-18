@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>Nipon Sajib — Portfolio</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- animated heartbeat background motif: two scrolling + pulsing ECG rows -->
+    <div class="heartbeat-bg" aria-hidden="true">
+      <div class="heartbeat-row">
+        <div class="hb-track">
+          <svg class="hb-svg" viewBox="0 0 2400 120" preserveAspectRatio="none">
+            <path class="hb-path"></path>
+          </svg>
+          <svg class="hb-svg" viewBox="0 0 2400 120" preserveAspectRatio="none">
+            <path class="hb-path"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="heartbeat-row reverse">
+        <div class="hb-track">
+          <svg class="hb-svg" viewBox="0 0 2400 120" preserveAspectRatio="none">
+            <path class="hb-path"></path>
+          </svg>
+          <svg class="hb-svg" viewBox="0 0 2400 120" preserveAspectRatio="none">
+            <path class="hb-path"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <header class="site-header reveal">
+      <div class="avatar" id="avatar" aria-hidden="true">
+        <img src="assets/avatar-placeholder.svg" alt="" id="avatarImg" />
+      </div>
+      <div class="header-text">
+        <span class="eyebrow">Portfolio · Case No. 001</span>
+        <h1>Nipon Sajib</h1>
+        <p>Biomedical Engineering Student @ Stony Brook University</p>
+      </div>
+    </header>
+
+    <div class="stage-frame reveal">
+      <div id="canvasHost"></div>
+      <div class="stage-caption" id="caption">
+        Drag to rotate · Tap the case to open it
+      </div>
+      <div class="webgl-fallback" id="fallback">
+        Your browser can't display the 3D scene. Try a recent version of Chrome,
+        Safari, or Firefox.
+      </div>
+    </div>
+
+    <div class="stage-controls reveal">
+      <button class="stage-btn" id="resetViewBtn" type="button">
+        ↺ Reset view
+      </button>
+      <button class="stage-btn" id="toggleCaseBtn" type="button">
+        🧳 Open / close case
+      </button>
+    </div>
+
+    <div class="luggage-tag reveal">
+      <b>N. SAJIB</b> — Est. 2019 — Handle w/ curiosity
+    </div>
+
+    <footer class="reveal">
+      Built with care, real hinges, and a slightly too-large collection of
+      pokéballs.
+    </footer>
+
+    <!-- background music toggle — muted on load, see js/main.js §4 -->
+    <button
+      class="audio-toggle"
+      id="audioToggle"
+      type="button"
+      data-playing="false"
+      aria-label="Unmute background music"
+    >
+      🔈
+    </button>
+
+    <!-- popup theme picker — the page itself always stays dark; this only
+     recolors the pokéball popups when you click one open -->
+    <div class="theme-picker">
+      <label for="themeSelect" aria-hidden="true">🎨</label>
+      <select id="themeSelect" aria-label="Popup theme">
+        <option value="dark">Dark popups</option>
+        <option value="light">Light popups</option>
+      </select>
+    </div>
+
+    <div class="modal-backdrop" id="backdrop">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        id="modalPanel"
+        tabindex="-1"
+      >
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <!-- three.js for the 3D scene, marked.js to render the markdown content -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
