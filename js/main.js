@@ -1130,6 +1130,13 @@
     }
 
     host.addEventListener("pointerdown", (e) => {
+      // preventDefault here (on top of touch-action:none in CSS) tells
+      // mobile browsers not to synthesize a delayed follow-up "click" for
+      // this touch — without it, that synthetic click can land on
+      // whatever DOM element is now under your finger by the time it
+      // fires, e.g. a preview card that just appeared in a freshly-opened
+      // popup, immediately "clicking into" it right after the real tap
+      e.preventDefault();
       downX = e.clientX;
       downY = e.clientY;
       sceneApi.setDragging(true);
@@ -1278,6 +1285,7 @@
     let lastFocused = null;
     let activeBallId = null;
     let currentView = null; // { sectionId, slug }
+    let lastFreshOpenAt = 0; // timestamp guard against mobile ghost-clicks, see wireModalControls
 
     function miniBallHead(eyebrow, title, withBack) {
       return `
@@ -1389,7 +1397,17 @@
       modalContent.querySelectorAll(".preview-card").forEach((card) => {
         const open = () =>
           navigate(view.sectionId, card.getAttribute("data-slug"));
-        card.addEventListener("click", open);
+        card.addEventListener("click", () => {
+          // extra safety net against mobile "ghost clicks": a synthetic
+          // follow-up click that some touch browsers fire shortly after a
+          // real tap, hit-tested against whatever's now in the DOM. If a
+          // card click lands suspiciously soon after this list was freshly
+          // opened by tapping a pokéball, it's almost certainly that ghost
+          // click landing on the first card that just appeared under your
+          // finger, not a real second tap — a genuine tap takes longer.
+          if (performance.now() - lastFreshOpenAt < 350) return;
+          open();
+        });
         card.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -1417,6 +1435,7 @@
       // fresh could still show whatever detail view the leftover URL
       // pointed at. Only applyRoute() (a real shared link, or the page
       // loading with a hash already in the URL) passes a real slug through.
+      if (!fromRouter) lastFreshOpenAt = performance.now();
       navigate(sectionId, slug || null, { fromRouter });
       backdrop.classList.add("is-active");
       modalPanel.focus();

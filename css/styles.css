@@ -301,6 +301,7 @@ footer.reveal {
   inset: 0;
   display: block;
   cursor: grab;
+  touch-action: none;
 }
 #canvasHost.hoverable {
   cursor: pointer;
