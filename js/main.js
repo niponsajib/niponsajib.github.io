@@ -250,7 +250,7 @@
      =========================================================================== */
   const Theme = (() => {
     const KEY = "ns-theme";
-    const DEFAULT = "dark";
+    const DEFAULT = "light";
     const VALID = ["dark", "light"];
 
     function apply(theme) {
